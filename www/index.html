@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0d1017">
+<title>SINTONÍA · Música y Radio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0d1017;
+  --panel:#151a24;
+  --panel2:#1b2130;
+  --line:#252d3f;
+  --text:#e8ecf4;
+  --muted:#8a93a8;
+  --dial:#ffb454;          /* ámbar de dial de radio */
+  --dial-deep:#e08b1f;
+  --ok:#5dd39e;
+  --danger:#ff6b6b;
+  --radius:14px;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:'Inter',system-ui,-apple-system,sans-serif;
+  font-size:15px;
+  overflow:hidden;
+}
+#app{display:flex;flex-direction:column;height:100dvh}
+
+/* ---------- Cabecera ---------- */
+header{
+  padding:calc(env(safe-area-inset-top,0px) + 14px) 18px 10px;
+  display:flex;align-items:center;gap:10px;
+}
+.logo{
+  font-family:'Syne',sans-serif;font-weight:800;font-size:20px;
+  letter-spacing:2px;color:var(--text);
+}
+.logo span{color:var(--dial)}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--danger);margin-left:auto;opacity:0;transition:opacity .3s}
+.dot.live{opacity:1;animation:blink 1.4s infinite}
+@keyframes blink{50%{opacity:.25}}
+
+/* ---------- Pestañas ---------- */
+nav{display:flex;gap:8px;padding:4px 18px 12px}
+nav button{
+  flex:1;padding:10px 0;border:1px solid var(--line);border-radius:999px;
+  background:transparent;color:var(--muted);font-family:'Inter';font-weight:600;font-size:14px;
+  cursor:pointer;transition:all .2s;
+}
+nav button.active{background:var(--dial);border-color:var(--dial);color:#1a1205}
+
+/* ---------- Contenido ---------- */
+main{flex:1;overflow-y:auto;padding:0 14px;padding-bottom:140px;-webkit-overflow-scrolling:touch}
+.vista{display:none}
+.vista.activa{display:block}
+
+/* Biblioteca */
+.acciones{display:flex;gap:8px;margin:6px 2px 14px}
+.btn{
+  flex:1;display:flex;align-items:center;justify-content:center;gap:7px;
+  padding:12px 6px;border-radius:var(--radius);border:1px dashed var(--line);
+  background:var(--panel);color:var(--text);font-weight:600;font-size:12.5px;cursor:pointer;
+}
+.btn:active{transform:scale(.97)}
+.btn svg{width:16px;height:16px;stroke:var(--dial);flex-shrink:0}
+
+.lista{display:flex;flex-direction:column;gap:6px}
+.grupoTitulo{
+  font-family:'Syne',sans-serif;font-weight:700;font-size:13px;letter-spacing:1px;
+  color:var(--dial);text-transform:uppercase;
+  padding:14px 4px 4px;display:flex;align-items:baseline;gap:8px;
+}
+.grupoTitulo small{color:var(--muted);font-family:'Inter';font-weight:500;letter-spacing:0;text-transform:none}
+.item{
+  display:flex;align-items:center;gap:12px;
+  background:var(--panel);border:1px solid transparent;border-radius:var(--radius);
+  padding:11px 12px;cursor:pointer;transition:border-color .15s;
+}
+.item.sonando{border-color:var(--dial)}
+.item .icono{
+  width:40px;height:40px;border-radius:10px;flex-shrink:0;
+  background:var(--panel2);display:flex;align-items:center;justify-content:center;
+  font-size:17px;
+}
+.item.sonando .icono{background:var(--dial);}
+.item .info{flex:1;min-width:0}
+.item .titulo{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item .sub{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+.item .accion{
+  background:none;border:none;color:var(--muted);font-size:18px;padding:6px;cursor:pointer;flex-shrink:0;
+}
+.item .accion:active{color:var(--danger)}
+.item .fav{font-size:19px}
+.item .fav.si{color:var(--dial)}
+
+.vacio{text-align:center;color:var(--muted);padding:50px 20px;font-size:14px;line-height:1.6}
+.vacio strong{color:var(--text)}
+
+/* Radios */
+.buscador{display:flex;gap:8px;margin:6px 2px 10px}
+.buscador input{
+  flex:1;padding:11px 14px;border-radius:var(--radius);border:1px solid var(--line);
+  background:var(--panel);color:var(--text);font-size:14px;outline:none;
+}
+.buscador input:focus{border-color:var(--dial)}
+.buscador button{
+  padding:0 16px;border-radius:var(--radius);border:none;background:var(--dial);
+  color:#1a1205;font-weight:700;font-size:14px;cursor:pointer;
+}
+.chips{display:flex;gap:7px;overflow-x:auto;padding:2px 2px 12px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{
+  padding:7px 14px;border-radius:999px;border:1px solid var(--line);background:transparent;
+  color:var(--muted);font-size:12.5px;font-weight:600;white-space:nowrap;cursor:pointer;
+}
+.chip.activa{background:var(--panel2);border-color:var(--dial);color:var(--dial)}
+.cargando{text-align:center;color:var(--muted);padding:30px;font-size:13px}
+
+/* ---------- Reproductor ---------- */
+#player{
+  position:fixed;left:0;right:0;bottom:0;
+  background:linear-gradient(180deg,var(--panel2),#141926);
+  border-top:1px solid var(--line);
+  padding:10px 16px calc(env(safe-area-inset-bottom,0px) + 12px);
+  transform:translateY(110%);transition:transform .3s ease;
+}
+#player.visible{transform:translateY(0)}
+
+/* barra de sintonía (progreso) */
+.dialbar{position:relative;height:26px;margin-bottom:2px;cursor:pointer}
+.dialbar .marcas{
+  position:absolute;inset:0;
+  background:repeating-linear-gradient(90deg,var(--line) 0 1px,transparent 1px 9px);
+  mask:linear-gradient(180deg,transparent 30%,#000 30% 70%,transparent 70%);
+  -webkit-mask:linear-gradient(180deg,transparent 30%,#000 30% 70%,transparent 70%);
+}
+.dialbar .relleno{
+  position:absolute;top:50%;left:0;height:3px;transform:translateY(-50%);
+  background:var(--dial);width:0%;border-radius:2px;
+}
+.dialbar .aguja{
+  position:absolute;top:0;bottom:0;width:2px;background:var(--danger);left:0%;
+  box-shadow:0 0 8px rgba(255,107,107,.8);
+}
+.dialbar.radio .relleno{width:100%!important;opacity:.25}
+.dialbar.radio .aguja{display:none}
+
+.tiempos{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);
+  font-variant-numeric:tabular-nums;margin-bottom:6px}
+
+.pinfo{display:flex;align-items:center;gap:10px}
+.vu{display:flex;align-items:flex-end;gap:2.5px;height:26px;width:26px;flex-shrink:0}
+.vu i{width:4px;background:var(--dial);border-radius:2px;height:20%}
+#player.sonando .vu i{animation:vu .7s ease-in-out infinite alternate}
+.vu i:nth-child(2){animation-delay:.15s}.vu i:nth-child(3){animation-delay:.3s}.vu i:nth-child(4){animation-delay:.45s}
+@keyframes vu{from{height:15%}to{height:100%}}
+.ptexto{flex:1;min-width:0}
+.ptitulo{font-family:'Syne',sans-serif;font-weight:700;font-size:14.5px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.psub{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+.controles{display:flex;align-items:center;gap:2px}
+.controles button{
+  background:none;border:none;color:var(--text);cursor:pointer;padding:7px;
+  display:flex;align-items:center;justify-content:center;position:relative;
+}
+.controles button svg{width:21px;height:21px;fill:currentColor}
+.controles .modo-btn{color:var(--muted)}
+.controles .modo-btn.on{color:var(--dial)}
+.controles .modo-btn .uno{
+  position:absolute;top:2px;right:2px;font-size:9px;font-weight:700;color:var(--dial);
+  display:none;
+}
+.controles .modo-btn.uno-on .uno{display:block}
+.controles .play{
+  width:46px;height:46px;border-radius:50%;background:var(--dial);color:#1a1205;padding:0;
+}
+.controles .play svg{width:23px;height:23px}
+.controles button:active{transform:scale(.92)}
+
+/* ---------- Modal URL remota ---------- */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;
+  align-items:flex-end;justify-content:center;z-index:50}
+.modal.abierto{display:flex}
+.modal .caja{
+  background:var(--panel2);border-radius:20px 20px 0 0;padding:22px 20px calc(env(safe-area-inset-bottom,0px) + 24px);
+  width:100%;max-width:520px;
+}
+.modal h3{font-family:'Syne';font-size:17px;margin-bottom:14px}
+.modal input{
+  width:100%;padding:12px 14px;margin-bottom:10px;border-radius:12px;
+  border:1px solid var(--line);background:var(--panel);color:var(--text);font-size:14px;outline:none;
+}
+.modal input:focus{border-color:var(--dial)}
+.modal .filab{display:flex;gap:10px;margin-top:6px}
+.modal .filab button{flex:1;padding:12px;border-radius:12px;border:none;font-weight:700;font-size:14px;cursor:pointer}
+.modal .cancelar{background:var(--panel);color:var(--muted);border:1px solid var(--line)!important}
+.modal .guardar{background:var(--dial);color:#1a1205}
+
+#toast{
+  position:fixed;bottom:160px;left:50%;transform:translateX(-50%) translateY(20px);
+  background:var(--panel2);border:1px solid var(--line);color:var(--text);
+  padding:10px 18px;border-radius:999px;font-size:13px;opacity:0;transition:all .3s;
+  pointer-events:none;z-index:60;white-space:nowrap;
+}
+#toast.ver{opacity:1;transform:translateX(-50%) translateY(0)}
+input[type=file]{display:none}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <header>
+    <div class="logo">SINTON<span>Í</span>A</div>
+    <div class="dot" id="liveDot"></div>
+  </header>
+
+  <nav>
+    <button id="tabMusica" class="active" onclick="cambiarVista('musica')">Mi música</button>
+    <button id="tabRadios" onclick="cambiarVista('radios')">Radios</button>
+  </nav>
+
+  <main>
+    <!-- ===== BIBLIOTECA ===== -->
+    <section id="vistaMusica" class="vista activa">
+      <div class="acciones">
+        <button class="btn" onclick="document.getElementById('fileInput').click()">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M12 3v12m0-12l-4 4m4-4l4 4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>
+          Archivos
+        </button>
+        <button class="btn" onclick="document.getElementById('folderInput').click()">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/></svg>
+          Carpeta
+        </button>
+        <button class="btn" onclick="abrirModal()">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M10 14a5 5 0 007.5.5l3-3a5 5 0 00-7-7l-1.5 1.5M14 10a5 5 0 00-7.5-.5l-3 3a5 5 0 007 7L12 18"/></svg>
+          URL
+        </button>
+      </div>
+      <input type="file" id="fileInput" accept="audio/*" multiple>
+      <input type="file" id="folderInput" webkitdirectory>
+      <div id="listaMusica" class="lista"></div>
+    </section>
+
+    <!-- ===== RADIOS ===== -->
+    <section id="vistaRadios" class="vista">
+      <div class="buscador">
+        <input id="busquedaRadio" type="search" placeholder="Buscar emisora (SER, Los 40, RNE…)" enterkeyhint="search">
+        <button onclick="buscarRadios()">Buscar</button>
+      </div>
+      <div class="chips" id="chips">
+        <button class="chip" data-tag="__favs">⭐ Favoritas</button>
+        <button class="chip activa" data-tag="">Top España</button>
+        <button class="chip" data-tag="pop">Pop</button>
+        <button class="chip" data-tag="rock">Rock</button>
+        <button class="chip" data-tag="dance">Dance</button>
+        <button class="chip" data-tag="jazz">Jazz</button>
+        <button class="chip" data-tag="classical">Clásica</button>
+        <button class="chip" data-tag="flamenco">Flamenco</button>
+        <button class="chip" data-tag="news">Noticias</button>
+      </div>
+      <div id="listaRadios" class="lista"></div>
+    </section>
+  </main>
+
+  <!-- ===== REPRODUCTOR ===== -->
+  <div id="player">
+    <div class="dialbar" id="dialbar">
+      <div class="marcas"></div>
+      <div class="relleno" id="relleno"></div>
+      <div class="aguja" id="aguja"></div>
+    </div>
+    <div class="tiempos"><span id="tActual">0:00</span><span id="tTotal">0:00</span></div>
+    <div class="pinfo">
+      <div class="vu"><i></i><i></i><i></i><i></i></div>
+      <div class="ptexto">
+        <div class="ptitulo" id="pTitulo">—</div>
+        <div class="psub" id="pSub"></div>
+      </div>
+      <div class="controles">
+        <button class="modo-btn" id="btnShuffle" onclick="toggleShuffle()" aria-label="Aleatorio">
+          <svg viewBox="0 0 24 24"><path d="M10.6 9.2L7.7 5.8C7.1 5.3 6.4 5 5.6 5H3v2h2.6c.2 0 .5.1.6.3l2.9 3.4 1.5-1.5zM16 5l2.3 2.3-9.6 11c-.2.2-.4.3-.6.3H3v2h5.1c.8 0 1.5-.3 2.1-.9l9.6-11L22 11V5h-6zm2.3 11.7L16 19h6v-6l-2.3 2.3-3.2-3.7-1.5 1.6 3.3 3.8z"/></svg>
+        </button>
+        <button onclick="anterior()" aria-label="Anterior"><svg viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg></button>
+        <button class="play" id="btnPlay" onclick="togglePlay()" aria-label="Reproducir/Pausar">
+          <svg id="iconPlay" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+        </button>
+        <button onclick="siguiente()" aria-label="Siguiente"><svg viewBox="0 0 24 24"><path d="M16 6h2v12h-2zM6 18l8.5-6L6 6z"/></svg></button>
+        <button class="modo-btn" id="btnRepeat" onclick="cicloRepeat()" aria-label="Repetir">
+          <svg viewBox="0 0 24 24"><path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z"/></svg>
+          <span class="uno">1</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== MODAL URL ===== -->
+  <div class="modal" id="modalUrl">
+    <div class="caja">
+      <h3>Añadir pista remota</h3>
+      <input id="urlNombre" placeholder="Nombre de la pista">
+      <input id="urlArtista" placeholder="Artista (opcional)">
+      <input id="urlDireccion" type="url" placeholder="https://…/cancion.mp3">
+      <div class="filab">
+        <button class="cancelar" onclick="cerrarModal()">Cancelar</button>
+        <button class="guardar" onclick="guardarRemota()">Guardar</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast"></div>
+</div>
+
+<audio id="audio" preload="metadata"></audio>
+
+<script>
+/* =========================================================
+   SINTONÍA · Paso 3
+   Novedades: importar carpeta completa, lectura de
+   etiquetas ID3 (artista/título) y biblioteca agrupada
+   por cantantes.
+   ========================================================= */
+const audio = document.getElementById('audio');
+let db = null;
+let biblioteca = [];        // pistas {id, nombre, artista, tipo:'local'|'remota', url?}
+let ordenActual = [];       // biblioteca en el orden mostrado (agrupada por artista)
+let radios = [];            // emisoras mostradas en la lista
+let cola = [];              // lista activa de reproducción
+let indice = -1;            // posición en la cola
+let modo = null;            // 'musica' | 'radio'
+let urlObjeto = null;       // objectURL activo (para liberar memoria)
+
+/* Preferencias persistentes */
+let shuffle = localStorage.getItem('sintonia_shuffle') === '1';
+let repeat  = localStorage.getItem('sintonia_repeat') || 'off';   // off | all | one
+let favs    = JSON.parse(localStorage.getItem('sintonia_favs') || '[]');
+let mostrandoFavs = false;
+
+const EXT_AUDIO = /\.(mp3|m4a|aac|ogg|oga|opus|wav|flac|weba|webm)$/i;
+const SIN_ARTISTA = 'Sin artista';
+
+/* ---------- IndexedDB ---------- */
+function abrirDB(){
+  return new Promise((res, rej) => {
+    const pet = indexedDB.open('sintonia', 1);
+    pet.onupgradeneeded = e => {
+      e.target.result.createObjectStore('pistas', { keyPath: 'id' });
+    };
+    pet.onsuccess = e => { db = e.target.result; res(); };
+    pet.onerror = () => rej(pet.error);
+  });
+}
+function dbPut(pista){
+  return new Promise((res, rej) => {
+    const tx = db.transaction('pistas', 'readwrite');
+    tx.objectStore('pistas').put(pista);
+    tx.oncomplete = res; tx.onerror = () => rej(tx.error);
+  });
+}
+function dbDel(id){
+  return new Promise((res, rej) => {
+    const tx = db.transaction('pistas', 'readwrite');
+    tx.objectStore('pistas').delete(id);
+    tx.oncomplete = res; tx.onerror = () => rej(tx.error);
+  });
+}
+function dbTodas(){
+  return new Promise((res, rej) => {
+    const tx = db.transaction('pistas', 'readonly');
+    const pet = tx.objectStore('pistas').getAll();
+    pet.onsuccess = () => res(pet.result || []);
+    pet.onerror = () => rej(pet.error);
+  });
+}
+
+/* ---------- Utilidades ---------- */
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('ver');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('ver'), 2200);
+}
+function fmt(s){
+  if (!isFinite(s)) return '—';
+  const m = Math.floor(s / 60), r = Math.floor(s % 60);
+  return m + ':' + String(r).padStart(2, '0');
+}
+function limpiarNombre(archivo){
+  return archivo.replace(/\.[^.]+$/, '').replace(/[_]+/g, ' ').trim();
+}
+function escapar(s){ return (s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+/* =========================================================
+   Lector de etiquetas ID3 (sin dependencias)
+   Lee TIT2/TPE1 de ID3v2.2/2.3/2.4 y, si no hay, ID3v1.
+   ========================================================= */
+function decodificarTexto(bytes){
+  if (!bytes.length) return '';
+  const enc = bytes[0];
+  const cuerpo = bytes.slice(1);
+  let nombreDec = 'windows-1252';
+  if (enc === 1) nombreDec = 'utf-16';
+  else if (enc === 2) nombreDec = 'utf-16be';
+  else if (enc === 3) nombreDec = 'utf-8';
+  try {
+    return new TextDecoder(nombreDec).decode(cuerpo).replace(/\0+/g, '').trim();
+  } catch (_) {
+    return new TextDecoder('utf-8').decode(cuerpo).replace(/\0+/g, '').trim();
+  }
+}
+
+function leerFramesID3(buf, ver){
+  const out = {};
+  let pos = 0;
+  const dec4 = i => String.fromCharCode(buf[i], buf[i+1], buf[i+2], buf[i+3]);
+  const dec3 = i => String.fromCharCode(buf[i], buf[i+1], buf[i+2]);
+  while (true) {
+    if (ver >= 3) {
+      if (pos + 10 > buf.length) break;
+      const id = dec4(pos);
+      if (!/^[A-Z0-9]{4}$/.test(id)) break;
+      let size;
+      if (ver === 4) {
+        size = ((buf[pos+4]&0x7f)<<21)|((buf[pos+5]&0x7f)<<14)|((buf[pos+6]&0x7f)<<7)|(buf[pos+7]&0x7f);
+      } else {
+        size = (buf[pos+4]<<24)|(buf[pos+5]<<16)|(buf[pos+6]<<8)|buf[pos+7];
+      }
+      if (size <= 0 || pos + 10 + size > buf.length) break;
+      const datos = buf.slice(pos + 10, pos + 10 + size);
+      if (id === 'TIT2') out.titulo = decodificarTexto(datos);
+      if (id === 'TPE1') out.artista = decodificarTexto(datos);
+      pos += 10 + size;
+    } else {
+      // ID3v2.2: identificadores de 3 caracteres, tamaño de 3 bytes
+      if (pos + 6 > buf.length) break;
+      const id = dec3(pos);
+      if (!/^[A-Z0-9]{3}$/.test(id)) break;
+      const size = (buf[pos+3]<<16)|(buf[pos+4]<<8)|buf[pos+5];
+      if (size <= 0 || pos + 6 + size > buf.length) break;
+      const datos = buf.slice(pos + 6, pos + 6 + size);
+      if (id === 'TT2') out.titulo = decodificarTexto(datos);
+      if (id === 'TP1') out.artista = decodificarTexto(datos);
+      pos += 6 + size;
+    }
+    if (out.titulo && out.artista) break;
+  }
+  return out;
+}
+
+async function leerEtiquetas(blob){
+  try {
+    const cab = new Uint8Array(await blob.slice(0, 10).arrayBuffer());
+    // ID3v2 al principio del archivo
+    if (cab[0] === 0x49 && cab[1] === 0x44 && cab[2] === 0x33) {
+      const ver = cab[3];
+      const size = ((cab[6]&0x7f)<<21)|((cab[7]&0x7f)<<14)|((cab[8]&0x7f)<<7)|(cab[9]&0x7f);
+      const limite = Math.min(size, 256 * 1024); // suficiente para los frames de texto
+      const buf = new Uint8Array(await blob.slice(10, 10 + limite).arrayBuffer());
+      const tags = leerFramesID3(buf, ver);
+      if (tags.titulo || tags.artista) return tags;
+    }
+    // ID3v1 al final del archivo
+    if (blob.size > 128) {
+      const cola128 = new Uint8Array(await blob.slice(blob.size - 128).arrayBuffer());
+      if (cola128[0] === 0x54 && cola128[1] === 0x41 && cola128[2] === 0x47) {
+        const dec = new TextDecoder('windows-1252');
+        const titulo = dec.decode(cola128.slice(3, 33)).replace(/\0+.*$/, '').trim();
+        const artista = dec.decode(cola128.slice(33, 63)).replace(/\0+.*$/, '').trim();
+        if (titulo || artista) return { titulo, artista };
+      }
+    }
+  } catch (_) {}
+  return {};
+}
+
+/* Si el archivo no trae etiquetas, probamos el patrón "Artista - Título" */
+function tagsDesdeNombre(nombre){
+  const m = nombre.match(/^(.{1,60}?)\s+-\s+(.+)$/);
+  if (m) return { artista: m[1].trim(), titulo: m[2].trim() };
+  return {};
+}
+
+/* ---------- Vistas ---------- */
+function cambiarVista(v){
+  document.getElementById('vistaMusica').classList.toggle('activa', v === 'musica');
+  document.getElementById('vistaRadios').classList.toggle('activa', v === 'radios');
+  document.getElementById('tabMusica').classList.toggle('active', v === 'musica');
+  document.getElementById('tabRadios').classList.toggle('active', v === 'radios');
+  if (v === 'radios' && radios.length === 0 && !mostrandoFavs) cargarRadiosTop();
+}
+
+/* ---------- Importación ---------- */
+async function importarArchivos(archivos){
+  const audios = archivos.filter(f => (f.type && f.type.startsWith('audio/')) || EXT_AUDIO.test(f.name));
+  if (!audios.length) { toast('No se han encontrado archivos de audio'); return; }
+  toast('Importando ' + audios.length + ' archivo' + (audios.length === 1 ? '' : 's') + '…');
+  let n = 0;
+  for (const f of audios) {
+    const base = limpiarNombre(f.name);
+    let tags = await leerEtiquetas(f);
+    if (!tags.artista && !tags.titulo) tags = tagsDesdeNombre(base);
+    const pista = {
+      id: 'loc_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
+      nombre: tags.titulo || base,
+      artista: tags.artista || '',
+      tipo: 'local',
+      mime: f.type,
+      tagsLeidos: true,
+      blob: f
+    };
+    try { await dbPut(pista); biblioteca.push(pista); n++; } catch (_) {}
+  }
+  pintarBiblioteca();
+  toast(n + (n === 1 ? ' pista importada' : ' pistas importadas'));
+}
+document.getElementById('fileInput').addEventListener('change', e => {
+  importarArchivos([...e.target.files]);
+  e.target.value = '';
+});
+document.getElementById('folderInput').addEventListener('change', e => {
+  importarArchivos([...e.target.files]);
+  e.target.value = '';
+});
+
+function abrirModal(){ document.getElementById('modalUrl').classList.add('abierto'); }
+function cerrarModal(){ document.getElementById('modalUrl').classList.remove('abierto'); }
+
+async function guardarRemota(){
+  const nombre = document.getElementById('urlNombre').value.trim();
+  const artista = document.getElementById('urlArtista').value.trim();
+  const url = document.getElementById('urlDireccion').value.trim();
+  if (!url) { toast('Falta la URL'); return; }
+  const pista = {
+    id: 'rem_' + Date.now(),
+    nombre: nombre || url.split('/').pop() || 'Pista remota',
+    artista, tipo: 'remota', url, tagsLeidos: true
+  };
+  await dbPut(pista);
+  biblioteca.push(pista);
+  pintarBiblioteca();
+  cerrarModal();
+  document.getElementById('urlNombre').value = '';
+  document.getElementById('urlArtista').value = '';
+  document.getElementById('urlDireccion').value = '';
+  toast('Pista remota guardada');
+}
+
+async function borrarPista(id, ev){
+  ev.stopPropagation();
+  await dbDel(id);
+  biblioteca = biblioteca.filter(p => p.id !== id);
+  pintarBiblioteca();
+}
+
+/* ---------- Biblioteca agrupada por artista ---------- */
+function pintarBiblioteca(){
+  const cont = document.getElementById('listaMusica');
+  if (!biblioteca.length) {
+    cont.innerHTML = '<div class="vacio"><strong>Tu biblioteca está vacía.</strong><br>Importa archivos sueltos, una carpeta entera o añade una pista por URL. Se guardan en la app y estarán aquí la próxima vez.</div>';
+    ordenActual = [];
+    return;
+  }
+  // Agrupar por artista
+  const grupos = new Map();
+  for (const p of biblioteca) {
+    const clave = (p.artista || '').trim() || SIN_ARTISTA;
+    if (!grupos.has(clave)) grupos.set(clave, []);
+    grupos.get(clave).push(p);
+  }
+  const claves = [...grupos.keys()].sort((a, b) => {
+    if (a === SIN_ARTISTA) return 1;
+    if (b === SIN_ARTISTA) return -1;
+    return a.localeCompare(b, 'es', { sensitivity: 'base' });
+  });
+  ordenActual = [];
+  let html = '';
+  const idActual = (modo === 'musica' && cola[indice]) ? cola[indice].id : null;
+  for (const clave of claves) {
+    const pistas = grupos.get(clave).sort((a, b) => a.nombre.localeCompare(b.nombre, 'es', { sensitivity: 'base' }));
+    html += `<div class="grupoTitulo">${escapar(clave)} <small>· ${pistas.length}</small></div>`;
+    for (const p of pistas) {
+      ordenActual.push(p);
+      html += `
+      <div class="item ${p.id === idActual ? 'sonando' : ''}" onclick="reproducirPistaId('${p.id}')">
+        <div class="icono">${p.tipo === 'remota' ? '🌐' : '🎵'}</div>
+        <div class="info">
+          <div class="titulo">${escapar(p.nombre)}</div>
+          <div class="sub">${escapar(p.artista) || (p.tipo === 'remota' ? 'Pista remota' : 'Archivo local')}</div>
+        </div>
+        <button class="accion" onclick="borrarPista('${p.id}', event)" aria-label="Eliminar">✕</button>
+      </div>`;
+    }
+  }
+  cont.innerHTML = html;
+}
+
+/* Relee etiquetas de pistas antiguas importadas antes de esta versión */
+async function actualizarEtiquetasAntiguas(){
+  const pendientes = biblioteca.filter(p => p.tipo === 'local' && p.blob && !p.tagsLeidos);
+  if (!pendientes.length) return;
+  let cambiadas = 0;
+  for (const p of pendientes) {
+    let tags = await leerEtiquetas(p.blob);
+    if (!tags.artista && !tags.titulo) tags = tagsDesdeNombre(p.nombre);
+    if (tags.titulo) p.nombre = tags.titulo;
+    if (tags.artista) p.artista = tags.artista;
+    p.tagsLeidos = true;
+    try { await dbPut(p); cambiadas++; } catch (_) {}
+  }
+  if (cambiadas) { pintarBiblioteca(); toast('Etiquetas actualizadas'); }
+}
+
+/* ---------- Radios (Radio Browser API) ---------- */
+const RB = 'https://de1.api.radio-browser.info/json/stations/search';
+
+async function pedirRadios(params){
+  mostrandoFavs = false;
+  const cont = document.getElementById('listaRadios');
+  cont.innerHTML = '<div class="cargando">Sintonizando…</div>';
+  try {
+    const q = new URLSearchParams({ countrycode: 'ES', hidebroken: 'true', order: 'votes', reverse: 'true', limit: '40', ...params });
+    const r = await fetch(RB + '?' + q.toString());
+    radios = (await r.json()).filter(e => e.url_resolved);
+    pintarRadios();
+  } catch (err) {
+    cont.innerHTML = '<div class="vacio">No se pudo conectar con el directorio de radios.<br>Comprueba la conexión e inténtalo de nuevo.</div>';
+  }
+}
+function cargarRadiosTop(){ pedirRadios({}); }
+function buscarRadios(){
+  const texto = document.getElementById('busquedaRadio').value.trim();
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('activa'));
+  pedirRadios(texto ? { name: texto } : {});
+}
+document.getElementById('busquedaRadio').addEventListener('keydown', e => { if (e.key === 'Enter') buscarRadios(); });
+document.querySelectorAll('.chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    document.querySelectorAll('.chip').forEach(c => c.classList.remove('activa'));
+    chip.classList.add('activa');
+    document.getElementById('busquedaRadio').value = '';
+    const tag = chip.dataset.tag;
+    if (tag === '__favs') { mostrarFavoritas(); return; }
+    pedirRadios(tag ? { tag } : {});
+  });
+});
+
+/* ----- Favoritas ----- */
+function esFav(uuid){ return favs.some(f => f.stationuuid === uuid); }
+function toggleFav(uuid, ev){
+  ev.stopPropagation();
+  const enLista = radios.find(e => e.stationuuid === uuid) || favs.find(e => e.stationuuid === uuid);
+  if (!enLista) return;
+  if (esFav(uuid)) {
+    favs = favs.filter(f => f.stationuuid !== uuid);
+    toast('Quitada de favoritas');
+  } else {
+    favs.push({
+      stationuuid: enLista.stationuuid,
+      name: enLista.name,
+      url_resolved: enLista.url_resolved,
+      tags: enLista.tags || '',
+      bitrate: enLista.bitrate || 0
+    });
+    toast('⭐ Añadida a favoritas');
+  }
+  localStorage.setItem('sintonia_favs', JSON.stringify(favs));
+  if (mostrandoFavs) mostrarFavoritas(); else pintarRadios();
+}
+function mostrarFavoritas(){
+  mostrandoFavs = true;
+  radios = [...favs];
+  const cont = document.getElementById('listaRadios');
+  if (!radios.length) {
+    cont.innerHTML = '<div class="vacio"><strong>Sin favoritas todavía.</strong><br>Toca la estrella de una emisora para tenerla siempre a mano, incluso sin buscarla.</div>';
+    return;
+  }
+  pintarRadios();
+}
+
+function pintarRadios(){
+  const cont = document.getElementById('listaRadios');
+  if (!radios.length) {
+    cont.innerHTML = '<div class="vacio">Sin resultados. Prueba con otro nombre o género.</div>';
+    return;
+  }
+  cont.innerHTML = radios.map((e, i) => `
+    <div class="item ${modo === 'radio' && cola[indice] && cola[indice].stationuuid === e.stationuuid ? 'sonando' : ''}" onclick="reproducirRadio(${i})">
+      <div class="icono">📻</div>
+      <div class="info">
+        <div class="titulo">${escapar(e.name)}</div>
+        <div class="sub">${escapar((e.tags || '').split(',').slice(0, 3).join(' · ')) || 'Radio'} ${e.bitrate ? '· ' + e.bitrate + ' kbps' : ''}</div>
+      </div>
+      <button class="accion fav ${esFav(e.stationuuid) ? 'si' : ''}" onclick="toggleFav('${e.stationuuid}', event)" aria-label="Favorita">${esFav(e.stationuuid) ? '★' : '☆'}</button>
+    </div>`).join('');
+}
+
+/* ---------- Motor de reproducción ---------- */
+function liberarURL(){
+  if (urlObjeto) { URL.revokeObjectURL(urlObjeto); urlObjeto = null; }
+}
+
+function reproducirPistaId(id, autoplay = true){
+  const orden = ordenActual.length ? ordenActual : biblioteca;
+  const i = orden.findIndex(p => p.id === id);
+  if (i < 0) return;
+  modo = 'musica';
+  cola = orden.slice();       // la cola sigue el orden agrupado por artista
+  indice = i;
+  const p = cola[i];
+  liberarURL();
+  if (p.tipo === 'local') {
+    urlObjeto = URL.createObjectURL(p.blob);
+    audio.src = urlObjeto;
+  } else {
+    audio.src = p.url;
+  }
+  if (autoplay) audio.play().catch(() => toast('No se pudo reproducir esta pista'));
+  actualizarUI(p.nombre, p.artista || (p.tipo === 'remota' ? 'Pista remota' : 'Archivo local'));
+  guardarSesion({ modo: 'musica', id: p.id });
+  pintarBiblioteca();
+}
+function reproducirIndiceMusica(i, autoplay = true){
+  const p = cola[i];
+  if (!p) return;
+  indice = i;
+  liberarURL();
+  if (p.tipo === 'local') {
+    urlObjeto = URL.createObjectURL(p.blob);
+    audio.src = urlObjeto;
+  } else {
+    audio.src = p.url;
+  }
+  if (autoplay) audio.play().catch(() => toast('No se pudo reproducir esta pista'));
+  actualizarUI(p.nombre, p.artista || (p.tipo === 'remota' ? 'Pista remota' : 'Archivo local'));
+  guardarSesion({ modo: 'musica', id: p.id });
+  pintarBiblioteca();
+}
+
+function reproducirRadio(i, autoplay = true){
+  modo = 'radio';
+  cola = radios;
+  indice = i;
+  const e = cola[i];
+  if (!e) return;
+  liberarURL();
+  audio.src = e.url_resolved;
+  if (autoplay) audio.play().catch(() => toast('Esta emisora no responde, prueba otra'));
+  actualizarUI(e.name, (e.tags || '').split(',').slice(0, 2).join(' · ') || 'En directo');
+  guardarSesion({ modo: 'radio', emisora: {
+    stationuuid: e.stationuuid, name: e.name, url_resolved: e.url_resolved,
+    tags: e.tags || '', bitrate: e.bitrate || 0
+  }});
+  pintarRadios();
+  // Contador de clics de Radio Browser (buena práctica del directorio)
+  if (autoplay) fetch('https://de1.api.radio-browser.info/json/url/' + e.stationuuid).catch(() => {});
+}
+
+function actualizarUI(titulo, sub){
+  document.getElementById('pTitulo').textContent = titulo;
+  document.getElementById('pSub').textContent = sub;
+  document.getElementById('player').classList.add('visible');
+  document.getElementById('dialbar').classList.toggle('radio', modo === 'radio');
+  document.getElementById('liveDot').classList.toggle('live', modo === 'radio');
+  document.getElementById('tTotal').textContent = modo === 'radio' ? 'DIRECTO' : '0:00';
+  document.getElementById('tActual').textContent = modo === 'radio' ? '● ' : '0:00';
+  if ('mediaSession' in navigator) {
+    navigator.mediaSession.metadata = new MediaMetadata({ title: titulo, artist: sub, album: 'SINTONÍA' });
+  }
+}
+
+/* ----- Aleatorio y repetir ----- */
+function toggleShuffle(){
+  shuffle = !shuffle;
+  localStorage.setItem('sintonia_shuffle', shuffle ? '1' : '0');
+  pintarModos();
+  toast(shuffle ? 'Aleatorio activado' : 'Aleatorio desactivado');
+}
+function cicloRepeat(){
+  repeat = repeat === 'off' ? 'all' : repeat === 'all' ? 'one' : 'off';
+  localStorage.setItem('sintonia_repeat', repeat);
+  pintarModos();
+  toast(repeat === 'all' ? 'Repetir lista' : repeat === 'one' ? 'Repetir pista' : 'Repetición desactivada');
+}
+function pintarModos(){
+  document.getElementById('btnShuffle').classList.toggle('on', shuffle);
+  const r = document.getElementById('btnRepeat');
+  r.classList.toggle('on', repeat !== 'off');
+  r.classList.toggle('uno-on', repeat === 'one');
+}
+function indiceAleatorio(){
+  if (cola.length <= 1) return indice;
+  let i;
+  do { i = Math.floor(Math.random() * cola.length); } while (i === indice);
+  return i;
+}
+
+function togglePlay(){
+  if (!audio.src) return;
+  if (audio.paused) audio.play(); else audio.pause();
+}
+function siguiente(manual = true){
+  if (indice < 0 || !cola.length) return;
+  let i;
+  if (shuffle) i = indiceAleatorio();
+  else {
+    i = indice + 1;
+    if (i >= cola.length) {
+      if (repeat === 'all' || manual) i = 0;
+      else { audio.pause(); return; }   // fin de lista sin repetición
+    }
+  }
+  modo === 'radio' ? reproducirRadio(i) : reproducirIndiceMusica(i);
+}
+function anterior(){
+  if (indice < 0 || !cola.length) return;
+  if (modo === 'musica' && audio.currentTime > 4) { audio.currentTime = 0; return; }
+  const i = shuffle ? indiceAleatorio() : (indice - 1 + cola.length) % cola.length;
+  modo === 'radio' ? reproducirRadio(i) : reproducirIndiceMusica(i);
+}
+
+audio.addEventListener('play', () => {
+  document.getElementById('player').classList.add('sonando');
+  document.getElementById('iconPlay').innerHTML = '<path d="M6 5h4v14H6zm8 0h4v14h-4z"/>';
+});
+audio.addEventListener('pause', () => {
+  document.getElementById('player').classList.remove('sonando');
+  document.getElementById('iconPlay').innerHTML = '<path d="M8 5v14l11-7z"/>';
+});
+audio.addEventListener('ended', () => {
+  if (modo !== 'musica') return;
+  if (repeat === 'one') { audio.currentTime = 0; audio.play(); return; }
+  siguiente(false);
+});
+audio.addEventListener('timeupdate', () => {
+  if (modo !== 'musica' || !audio.duration) return;
+  const pct = (audio.currentTime / audio.duration) * 100;
+  document.getElementById('relleno').style.width = pct + '%';
+  document.getElementById('aguja').style.left = pct + '%';
+  document.getElementById('tActual').textContent = fmt(audio.currentTime);
+  document.getElementById('tTotal').textContent = fmt(audio.duration);
+});
+audio.addEventListener('error', () => {
+  if (audio.src) toast('Error al reproducir. Formato o stream no disponible.');
+});
+
+document.getElementById('dialbar').addEventListener('pointerdown', e => {
+  if (modo !== 'musica' || !audio.duration) return;
+  const r = e.currentTarget.getBoundingClientRect();
+  audio.currentTime = ((e.clientX - r.left) / r.width) * audio.duration;
+});
+
+/* Controles desde pantalla de bloqueo */
+if ('mediaSession' in navigator) {
+  navigator.mediaSession.setActionHandler('play', () => audio.play());
+  navigator.mediaSession.setActionHandler('pause', () => audio.pause());
+  navigator.mediaSession.setActionHandler('previoustrack', anterior);
+  navigator.mediaSession.setActionHandler('nexttrack', () => siguiente(true));
+}
+
+/* ----- Última sesión ----- */
+function guardarSesion(datos){
+  localStorage.setItem('sintonia_sesion', JSON.stringify(datos));
+}
+function restaurarSesion(){
+  let s = null;
+  try { s = JSON.parse(localStorage.getItem('sintonia_sesion')); } catch (_) {}
+  if (!s) return;
+  if (s.modo === 'musica' && s.id) {
+    if (biblioteca.some(p => p.id === s.id)) reproducirPistaId(s.id, false);  // cargada y en pausa
+  } else if (s.modo === 'radio' && s.emisora) {
+    radios = [s.emisora];
+    reproducirRadio(0, false);
+  }
+}
+
+/* ---------- Arranque ---------- */
+(async function init(){
+  try {
+    await abrirDB();
+    biblioteca = await dbTodas();
+  } catch (_) {}
+  pintarBiblioteca();
+  pintarModos();
+  restaurarSesion();
+  actualizarEtiquetasAntiguas();   // en segundo plano
+})();
+</script>
+</body>
+</html>

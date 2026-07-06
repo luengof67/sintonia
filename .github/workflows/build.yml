@@ -1,0 +1,65 @@
+name: Build APK
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Configurar Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Instalar dependencias
+        run: npm install
+
+      - name: Añadir plataforma Android
+        run: npx cap add android
+
+      - name: Permitir streams http (radios sin https)
+        run: |
+          sed -i 's|<application|<application android:usesCleartextTraffic="true"|' android/app/src/main/AndroidManifest.xml
+
+      - name: Sincronizar Capacitor
+        run: npx cap sync android
+
+      - name: Decodificar keystore
+        run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > android/app/keystore.jks
+
+      - name: Compilar APK (release sin firmar)
+        working-directory: android
+        run: ./gradlew assembleRelease
+
+      - name: Alinear y firmar APK
+        run: |
+          BUILD_TOOLS=$(ls -d $ANDROID_HOME/build-tools/* | sort -V | tail -1)
+          $BUILD_TOOLS/zipalign -p 4 \
+            android/app/build/outputs/apk/release/app-release-unsigned.apk \
+            sintonia-aligned.apk
+          $BUILD_TOOLS/apksigner sign \
+            --ks android/app/keystore.jks \
+            --ks-pass pass:"${{ secrets.KEYSTORE_PASSWORD }}" \
+            --ks-key-alias "${{ secrets.KEY_ALIAS }}" \
+            --key-pass pass:"${{ secrets.KEY_PASSWORD }}" \
+            --out SINTONIA.apk \
+            sintonia-aligned.apk
+          $BUILD_TOOLS/apksigner verify --print-certs SINTONIA.apk
+
+      - name: Subir APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: SINTONIA-apk
+          path: SINTONIA.apk
