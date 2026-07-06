@@ -55,10 +55,21 @@ nav button{
 }
 nav button.active{background:var(--dial);border-color:var(--dial);color:#1a1205}
 
+/* Sub-pestañas de Mi música */
+.subtabs{display:flex;gap:14px;padding:2px 4px 10px}
+.subtabs button{
+  background:none;border:none;color:var(--muted);font-family:'Syne',sans-serif;
+  font-weight:700;font-size:14px;letter-spacing:.5px;cursor:pointer;
+  padding:4px 2px;border-bottom:2px solid transparent;
+}
+.subtabs button.activa{color:var(--dial);border-bottom-color:var(--dial)}
+
 /* ---------- Contenido ---------- */
 main{flex:1;overflow-y:auto;padding:0 14px;padding-bottom:140px;-webkit-overflow-scrolling:touch}
 .vista{display:none}
 .vista.activa{display:block}
+.panel{display:none}
+.panel.activo{display:block}
 
 /* Biblioteca */
 .acciones{display:flex;gap:8px;margin:6px 2px 14px}
@@ -71,38 +82,68 @@ main{flex:1;overflow-y:auto;padding:0 14px;padding-bottom:140px;-webkit-overflow
 .btn svg{width:16px;height:16px;stroke:var(--dial);flex-shrink:0}
 
 .lista{display:flex;flex-direction:column;gap:6px}
-.grupoTitulo{
-  font-family:'Syne',sans-serif;font-weight:700;font-size:13px;letter-spacing:1px;
-  color:var(--dial);text-transform:uppercase;
-  padding:14px 4px 4px;display:flex;align-items:baseline;gap:8px;
-}
-.grupoTitulo small{color:var(--muted);font-family:'Inter';font-weight:500;letter-spacing:0;text-transform:none}
-.item{
+
+/* Carpetas de artista */
+.carpeta{
   display:flex;align-items:center;gap:12px;
+  background:var(--panel2);border:1px solid var(--line);border-radius:var(--radius);
+  padding:12px;cursor:pointer;margin-top:8px;
+}
+.carpeta .cicono{font-size:19px;flex-shrink:0}
+.carpeta .cnombre{
+  flex:1;min-width:0;font-family:'Syne',sans-serif;font-weight:700;font-size:14px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.carpeta .ccuenta{color:var(--muted);font-size:12px;flex-shrink:0}
+.carpeta .cplay{
+  width:34px;height:34px;border-radius:50%;border:none;background:var(--panel);
+  color:var(--dial);flex-shrink:0;cursor:pointer;font-size:13px;
+  display:flex;align-items:center;justify-content:center;
+}
+.carpeta .cplay:active{background:var(--dial);color:#1a1205}
+.carpeta.abierta{border-color:var(--dial)}
+
+.item{
+  display:flex;align-items:center;gap:10px;
   background:var(--panel);border:1px solid transparent;border-radius:var(--radius);
   padding:11px 12px;cursor:pointer;transition:border-color .15s;
 }
+.item.sangrada{margin-left:14px}
 .item.sonando{border-color:var(--dial)}
 .item .icono{
-  width:40px;height:40px;border-radius:10px;flex-shrink:0;
+  width:38px;height:38px;border-radius:10px;flex-shrink:0;
   background:var(--panel2);display:flex;align-items:center;justify-content:center;
-  font-size:17px;
+  font-size:16px;
 }
 .item.sonando .icono{background:var(--dial);}
 .item .info{flex:1;min-width:0}
 .item .titulo{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .item .sub{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
 .item .accion{
-  background:none;border:none;color:var(--muted);font-size:18px;padding:6px;cursor:pointer;flex-shrink:0;
+  background:none;border:none;color:var(--muted);font-size:17px;padding:5px;cursor:pointer;flex-shrink:0;
 }
 .item .accion:active{color:var(--danger)}
+.item .mas{font-size:20px;color:var(--dial)}
 .item .fav{font-size:19px}
 .item .fav.si{color:var(--dial)}
 
 .vacio{text-align:center;color:var(--muted);padding:50px 20px;font-size:14px;line-height:1.6}
 .vacio strong{color:var(--text)}
 
-/* Radios */
+/* Listas de reproducción */
+.cabLista{display:flex;align-items:center;gap:10px;padding:8px 2px 12px}
+.cabLista .volver{
+  background:none;border:none;color:var(--dial);font-size:22px;cursor:pointer;padding:4px 8px 4px 0;
+}
+.cabLista .nombreLista{flex:1;font-family:'Syne';font-weight:700;font-size:17px;min-width:0;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cabLista button.peq{
+  background:var(--panel);border:1px solid var(--line);color:var(--text);
+  border-radius:999px;padding:8px 14px;font-size:12.5px;font-weight:600;cursor:pointer;flex-shrink:0;
+}
+.cabLista button.peq.rojo{color:var(--danger)}
+
+/* ---------- Radios ---------- */
 .buscador{display:flex;gap:8px;margin:6px 2px 10px}
 .buscador input{
   flex:1;padding:11px 14px;border-radius:var(--radius);border:1px solid var(--line);
@@ -184,13 +225,13 @@ main{flex:1;overflow-y:auto;padding:0 14px;padding-bottom:140px;-webkit-overflow
 .controles .play svg{width:23px;height:23px}
 .controles button:active{transform:scale(.92)}
 
-/* ---------- Modal URL remota ---------- */
+/* ---------- Modales ---------- */
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;
   align-items:flex-end;justify-content:center;z-index:50}
 .modal.abierto{display:flex}
 .modal .caja{
   background:var(--panel2);border-radius:20px 20px 0 0;padding:22px 20px calc(env(safe-area-inset-bottom,0px) + 24px);
-  width:100%;max-width:520px;
+  width:100%;max-width:520px;max-height:70dvh;overflow-y:auto;
 }
 .modal h3{font-family:'Syne';font-size:17px;margin-bottom:14px}
 .modal input{
@@ -202,6 +243,14 @@ main{flex:1;overflow-y:auto;padding:0 14px;padding-bottom:140px;-webkit-overflow
 .modal .filab button{flex:1;padding:12px;border-radius:12px;border:none;font-weight:700;font-size:14px;cursor:pointer}
 .modal .cancelar{background:var(--panel);color:var(--muted);border:1px solid var(--line)!important}
 .modal .guardar{background:var(--dial);color:#1a1205}
+.opcionLista{
+  display:flex;align-items:center;gap:10px;width:100%;
+  background:var(--panel);border:1px solid var(--line);border-radius:12px;
+  padding:13px 14px;margin-bottom:8px;color:var(--text);font-size:14px;font-weight:600;
+  cursor:pointer;text-align:left;
+}
+.opcionLista small{color:var(--muted);font-weight:400;margin-left:auto}
+.opcionLista:active{border-color:var(--dial)}
 
 #toast{
   position:fixed;bottom:160px;left:50%;transform:translateX(-50%) translateY(20px);
@@ -230,23 +279,53 @@ input[type=file]{display:none}
   <main>
     <!-- ===== BIBLIOTECA ===== -->
     <section id="vistaMusica" class="vista activa">
-      <div class="acciones">
-        <button class="btn" onclick="document.getElementById('fileInput').click()">
-          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M12 3v12m0-12l-4 4m4-4l4 4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>
-          Archivos
-        </button>
-        <button class="btn" onclick="document.getElementById('folderInput').click()">
-          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/></svg>
-          Carpeta
-        </button>
-        <button class="btn" onclick="abrirModal()">
-          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M10 14a5 5 0 007.5.5l3-3a5 5 0 00-7-7l-1.5 1.5M14 10a5 5 0 00-7.5-.5l-3 3a5 5 0 007 7L12 18"/></svg>
-          URL
-        </button>
+      <div class="subtabs">
+        <button id="stArtistas" class="activa" onclick="cambiarPanel('artistas')">Artistas</button>
+        <button id="stListas" onclick="cambiarPanel('listas')">Listas</button>
       </div>
-      <input type="file" id="fileInput" accept="audio/*" multiple>
-      <input type="file" id="folderInput" webkitdirectory>
-      <div id="listaMusica" class="lista"></div>
+
+      <!-- Panel artistas -->
+      <div id="panelArtistas" class="panel activo">
+        <div class="acciones">
+          <button class="btn" onclick="document.getElementById('fileInput').click()">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M12 3v12m0-12l-4 4m4-4l4 4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>
+            Archivos
+          </button>
+          <button class="btn" onclick="document.getElementById('folderInput').click()">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/></svg>
+            Carpeta
+          </button>
+          <button class="btn" onclick="abrirModal()">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M10 14a5 5 0 007.5.5l3-3a5 5 0 00-7-7l-1.5 1.5M14 10a5 5 0 00-7.5-.5l-3 3a5 5 0 007 7L12 18"/></svg>
+            URL
+          </button>
+        </div>
+        <input type="file" id="fileInput" accept="audio/*" multiple>
+        <input type="file" id="folderInput" webkitdirectory>
+        <div id="listaMusica" class="lista"></div>
+      </div>
+
+      <!-- Panel listas -->
+      <div id="panelListas" class="panel">
+        <div id="vistaListas">
+          <div class="acciones">
+            <button class="btn" onclick="crearListaPrompt()">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+              Nueva lista
+            </button>
+          </div>
+          <div id="listaListas" class="lista"></div>
+        </div>
+        <div id="vistaDetalleLista" style="display:none">
+          <div class="cabLista">
+            <button class="volver" onclick="cerrarDetalleLista()">‹</button>
+            <div class="nombreLista" id="detNombre"></div>
+            <button class="peq" onclick="reproducirListaActual()">▶ Todo</button>
+            <button class="peq rojo" onclick="borrarListaActual()">🗑</button>
+          </div>
+          <div id="detPistas" class="lista"></div>
+        </div>
+      </div>
     </section>
 
     <!-- ===== RADIOS ===== -->
@@ -315,6 +394,19 @@ input[type=file]{display:none}
     </div>
   </div>
 
+  <!-- ===== MODAL AÑADIR A LISTA ===== -->
+  <div class="modal" id="modalLista">
+    <div class="caja">
+      <h3>Añadir a lista</h3>
+      <div id="opcionesListas"></div>
+      <input id="nuevaListaNombre" placeholder="O escribe el nombre de una lista nueva…">
+      <div class="filab">
+        <button class="cancelar" onclick="cerrarModalLista()">Cancelar</button>
+        <button class="guardar" onclick="crearYAnadir()">Crear y añadir</button>
+      </div>
+    </div>
+  </div>
+
   <div id="toast"></div>
 </div>
 
@@ -322,26 +414,28 @@ input[type=file]{display:none}
 
 <script>
 /* =========================================================
-   SINTONÍA · Paso 3
-   Novedades: importar carpeta completa, lectura de
-   etiquetas ID3 (artista/título) y biblioteca agrupada
-   por cantantes.
+   SINTONÍA · Paso 4
+   Novedades: carpetas plegables por artista y listas
+   de reproducción.
    ========================================================= */
 const audio = document.getElementById('audio');
 let db = null;
 let biblioteca = [];        // pistas {id, nombre, artista, tipo:'local'|'remota', url?}
-let ordenActual = [];       // biblioteca en el orden mostrado (agrupada por artista)
-let radios = [];            // emisoras mostradas en la lista
+let radios = [];            // emisoras mostradas
 let cola = [];              // lista activa de reproducción
-let indice = -1;            // posición en la cola
+let indice = -1;
 let modo = null;            // 'musica' | 'radio'
-let urlObjeto = null;       // objectURL activo (para liberar memoria)
+let urlObjeto = null;
 
 /* Preferencias persistentes */
 let shuffle = localStorage.getItem('sintonia_shuffle') === '1';
-let repeat  = localStorage.getItem('sintonia_repeat') || 'off';   // off | all | one
+let repeat  = localStorage.getItem('sintonia_repeat') || 'off';
 let favs    = JSON.parse(localStorage.getItem('sintonia_favs') || '[]');
+let listas  = JSON.parse(localStorage.getItem('sintonia_listas') || '[]');   // {id, nombre, pistas:[ids]}
+let abiertas = JSON.parse(localStorage.getItem('sintonia_abiertas') || '{}'); // carpetas de artista abiertas
 let mostrandoFavs = false;
+let listaActualId = null;   // lista abierta en detalle
+let pistaParaLista = null;  // pista pendiente de añadir a lista
 
 const EXT_AUDIO = /\.(mp3|m4a|aac|ogg|oga|opus|wav|flac|weba|webm)$/i;
 const SIN_ARTISTA = 'Sin artista';
@@ -397,10 +491,11 @@ function limpiarNombre(archivo){
   return archivo.replace(/\.[^.]+$/, '').replace(/[_]+/g, ' ').trim();
 }
 function escapar(s){ return (s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function guardarListas(){ localStorage.setItem('sintonia_listas', JSON.stringify(listas)); }
+function idPistaSonando(){ return (modo === 'musica' && cola[indice]) ? cola[indice].id : null; }
 
 /* =========================================================
    Lector de etiquetas ID3 (sin dependencias)
-   Lee TIT2/TPE1 de ID3v2.2/2.3/2.4 y, si no hay, ID3v1.
    ========================================================= */
 function decodificarTexto(bytes){
   if (!bytes.length) return '';
@@ -416,7 +511,6 @@ function decodificarTexto(bytes){
     return new TextDecoder('utf-8').decode(cuerpo).replace(/\0+/g, '').trim();
   }
 }
-
 function leerFramesID3(buf, ver){
   const out = {};
   let pos = 0;
@@ -439,7 +533,6 @@ function leerFramesID3(buf, ver){
       if (id === 'TPE1') out.artista = decodificarTexto(datos);
       pos += 10 + size;
     } else {
-      // ID3v2.2: identificadores de 3 caracteres, tamaño de 3 bytes
       if (pos + 6 > buf.length) break;
       const id = dec3(pos);
       if (!/^[A-Z0-9]{3}$/.test(id)) break;
@@ -454,20 +547,17 @@ function leerFramesID3(buf, ver){
   }
   return out;
 }
-
 async function leerEtiquetas(blob){
   try {
     const cab = new Uint8Array(await blob.slice(0, 10).arrayBuffer());
-    // ID3v2 al principio del archivo
     if (cab[0] === 0x49 && cab[1] === 0x44 && cab[2] === 0x33) {
       const ver = cab[3];
       const size = ((cab[6]&0x7f)<<21)|((cab[7]&0x7f)<<14)|((cab[8]&0x7f)<<7)|(cab[9]&0x7f);
-      const limite = Math.min(size, 256 * 1024); // suficiente para los frames de texto
+      const limite = Math.min(size, 256 * 1024);
       const buf = new Uint8Array(await blob.slice(10, 10 + limite).arrayBuffer());
       const tags = leerFramesID3(buf, ver);
       if (tags.titulo || tags.artista) return tags;
     }
-    // ID3v1 al final del archivo
     if (blob.size > 128) {
       const cola128 = new Uint8Array(await blob.slice(blob.size - 128).arrayBuffer());
       if (cola128[0] === 0x54 && cola128[1] === 0x41 && cola128[2] === 0x47) {
@@ -480,21 +570,26 @@ async function leerEtiquetas(blob){
   } catch (_) {}
   return {};
 }
-
-/* Si el archivo no trae etiquetas, probamos el patrón "Artista - Título" */
 function tagsDesdeNombre(nombre){
   const m = nombre.match(/^(.{1,60}?)\s+-\s+(.+)$/);
   if (m) return { artista: m[1].trim(), titulo: m[2].trim() };
   return {};
 }
 
-/* ---------- Vistas ---------- */
+/* ---------- Vistas y paneles ---------- */
 function cambiarVista(v){
   document.getElementById('vistaMusica').classList.toggle('activa', v === 'musica');
   document.getElementById('vistaRadios').classList.toggle('activa', v === 'radios');
   document.getElementById('tabMusica').classList.toggle('active', v === 'musica');
   document.getElementById('tabRadios').classList.toggle('active', v === 'radios');
   if (v === 'radios' && radios.length === 0 && !mostrandoFavs) cargarRadiosTop();
+}
+function cambiarPanel(p){
+  document.getElementById('panelArtistas').classList.toggle('activo', p === 'artistas');
+  document.getElementById('panelListas').classList.toggle('activo', p === 'listas');
+  document.getElementById('stArtistas').classList.toggle('activa', p === 'artistas');
+  document.getElementById('stListas').classList.toggle('activa', p === 'listas');
+  if (p === 'listas') { cerrarDetalleLista(); pintarListas(); }
 }
 
 /* ---------- Importación ---------- */
@@ -557,18 +652,20 @@ async function borrarPista(id, ev){
   ev.stopPropagation();
   await dbDel(id);
   biblioteca = biblioteca.filter(p => p.id !== id);
+  // la quitamos también de todas las listas
+  let cambiado = false;
+  for (const l of listas) {
+    const antes = l.pistas.length;
+    l.pistas = l.pistas.filter(x => x !== id);
+    if (l.pistas.length !== antes) cambiado = true;
+  }
+  if (cambiado) guardarListas();
   pintarBiblioteca();
+  if (listaActualId) pintarDetalleLista();
 }
 
-/* ---------- Biblioteca agrupada por artista ---------- */
-function pintarBiblioteca(){
-  const cont = document.getElementById('listaMusica');
-  if (!biblioteca.length) {
-    cont.innerHTML = '<div class="vacio"><strong>Tu biblioteca está vacía.</strong><br>Importa archivos sueltos, una carpeta entera o añade una pista por URL. Se guardan en la app y estarán aquí la próxima vez.</div>';
-    ordenActual = [];
-    return;
-  }
-  // Agrupar por artista
+/* ---------- Biblioteca: carpetas por artista ---------- */
+function gruposPorArtista(){
   const grupos = new Map();
   for (const p of biblioteca) {
     const clave = (p.artista || '').trim() || SIN_ARTISTA;
@@ -580,29 +677,56 @@ function pintarBiblioteca(){
     if (b === SIN_ARTISTA) return -1;
     return a.localeCompare(b, 'es', { sensitivity: 'base' });
   });
-  ordenActual = [];
+  for (const c of claves) {
+    grupos.get(c).sort((a, b) => a.nombre.localeCompare(b.nombre, 'es', { sensitivity: 'base' }));
+  }
+  return { grupos, claves };
+}
+
+function toggleCarpeta(clave){
+  if (abiertas[clave]) delete abiertas[clave]; else abiertas[clave] = true;
+  localStorage.setItem('sintonia_abiertas', JSON.stringify(abiertas));
+  pintarBiblioteca();
+}
+
+function pintarBiblioteca(){
+  const cont = document.getElementById('listaMusica');
+  if (!biblioteca.length) {
+    cont.innerHTML = '<div class="vacio"><strong>Tu biblioteca está vacía.</strong><br>Importa archivos sueltos, una carpeta entera o añade una pista por URL. Se organizan solos por artista.</div>';
+    return;
+  }
+  const { grupos, claves } = gruposPorArtista();
+  const idActual = idPistaSonando();
   let html = '';
-  const idActual = (modo === 'musica' && cola[indice]) ? cola[indice].id : null;
   for (const clave of claves) {
-    const pistas = grupos.get(clave).sort((a, b) => a.nombre.localeCompare(b.nombre, 'es', { sensitivity: 'base' }));
-    html += `<div class="grupoTitulo">${escapar(clave)} <small>· ${pistas.length}</small></div>`;
-    for (const p of pistas) {
-      ordenActual.push(p);
-      html += `
-      <div class="item ${p.id === idActual ? 'sonando' : ''}" onclick="reproducirPistaId('${p.id}')">
-        <div class="icono">${p.tipo === 'remota' ? '🌐' : '🎵'}</div>
-        <div class="info">
-          <div class="titulo">${escapar(p.nombre)}</div>
-          <div class="sub">${escapar(p.artista) || (p.tipo === 'remota' ? 'Pista remota' : 'Archivo local')}</div>
-        </div>
-        <button class="accion" onclick="borrarPista('${p.id}', event)" aria-label="Eliminar">✕</button>
-      </div>`;
+    const pistas = grupos.get(clave);
+    const abierta = !!abiertas[clave] || pistas.some(p => p.id === idActual);
+    html += `
+    <div class="carpeta ${abierta ? 'abierta' : ''}" onclick="toggleCarpeta('${escapar(clave).replace(/'/g, "\\'")}')">
+      <span class="cicono">${abierta ? '📂' : '📁'}</span>
+      <span class="cnombre">${escapar(clave)}</span>
+      <span class="ccuenta">${pistas.length}</span>
+      <button class="cplay" onclick="reproducirArtista('${escapar(clave).replace(/'/g, "\\'")}', event)" aria-label="Reproducir artista">▶</button>
+    </div>`;
+    if (abierta) {
+      for (const p of pistas) {
+        html += `
+        <div class="item sangrada ${p.id === idActual ? 'sonando' : ''}" onclick="reproducirEnArtista('${p.id}')">
+          <div class="icono">${p.tipo === 'remota' ? '🌐' : '🎵'}</div>
+          <div class="info">
+            <div class="titulo">${escapar(p.nombre)}</div>
+            <div class="sub">${escapar(p.artista) || (p.tipo === 'remota' ? 'Pista remota' : 'Archivo local')}</div>
+          </div>
+          <button class="accion mas" onclick="abrirModalLista('${p.id}', event)" aria-label="Añadir a lista">＋</button>
+          <button class="accion" onclick="borrarPista('${p.id}', event)" aria-label="Eliminar">✕</button>
+        </div>`;
+      }
     }
   }
   cont.innerHTML = html;
 }
 
-/* Relee etiquetas de pistas antiguas importadas antes de esta versión */
+/* Relee etiquetas de pistas antiguas */
 async function actualizarEtiquetasAntiguas(){
   const pendientes = biblioteca.filter(p => p.tipo === 'local' && p.blob && !p.tagsLeidos);
   if (!pendientes.length) return;
@@ -616,6 +740,126 @@ async function actualizarEtiquetasAntiguas(){
     try { await dbPut(p); cambiadas++; } catch (_) {}
   }
   if (cambiadas) { pintarBiblioteca(); toast('Etiquetas actualizadas'); }
+}
+
+/* ---------- Listas de reproducción ---------- */
+function pintarListas(){
+  const cont = document.getElementById('listaListas');
+  if (!listas.length) {
+    cont.innerHTML = '<div class="vacio"><strong>Sin listas todavía.</strong><br>Crea una con el botón de arriba, o desde el ＋ de cualquier pista.</div>';
+    return;
+  }
+  cont.innerHTML = listas.map(l => `
+    <div class="item" onclick="abrirDetalleLista('${l.id}')">
+      <div class="icono">🎼</div>
+      <div class="info">
+        <div class="titulo">${escapar(l.nombre)}</div>
+        <div class="sub">${l.pistas.length} pista${l.pistas.length === 1 ? '' : 's'}</div>
+      </div>
+      <button class="accion" onclick="reproducirLista('${l.id}', event)" aria-label="Reproducir">▶</button>
+    </div>`).join('');
+}
+function crearListaPrompt(){
+  const nombre = prompt('Nombre de la nueva lista:');
+  if (!nombre || !nombre.trim()) return;
+  listas.push({ id: 'lst_' + Date.now(), nombre: nombre.trim(), pistas: [] });
+  guardarListas();
+  pintarListas();
+  toast('Lista creada');
+}
+function abrirDetalleLista(id){
+  listaActualId = id;
+  document.getElementById('vistaListas').style.display = 'none';
+  document.getElementById('vistaDetalleLista').style.display = 'block';
+  pintarDetalleLista();
+}
+function cerrarDetalleLista(){
+  listaActualId = null;
+  document.getElementById('vistaDetalleLista').style.display = 'none';
+  document.getElementById('vistaListas').style.display = 'block';
+  pintarListas();
+}
+function pistasDeLista(l){
+  return l.pistas.map(id => biblioteca.find(p => p.id === id)).filter(Boolean);
+}
+function pintarDetalleLista(){
+  const l = listas.find(x => x.id === listaActualId);
+  if (!l) { cerrarDetalleLista(); return; }
+  document.getElementById('detNombre').textContent = l.nombre;
+  const pistas = pistasDeLista(l);
+  const cont = document.getElementById('detPistas');
+  if (!pistas.length) {
+    cont.innerHTML = '<div class="vacio">Lista vacía. Añade pistas desde el ＋ de la biblioteca.</div>';
+    return;
+  }
+  const idActual = idPistaSonando();
+  cont.innerHTML = pistas.map((p, i) => `
+    <div class="item ${p.id === idActual ? 'sonando' : ''}" onclick="reproducirDeLista('${l.id}', ${i})">
+      <div class="icono">${p.tipo === 'remota' ? '🌐' : '🎵'}</div>
+      <div class="info">
+        <div class="titulo">${escapar(p.nombre)}</div>
+        <div class="sub">${escapar(p.artista) || '—'}</div>
+      </div>
+      <button class="accion" onclick="quitarDeLista('${l.id}', '${p.id}', event)" aria-label="Quitar de la lista">✕</button>
+    </div>`).join('');
+}
+function quitarDeLista(idLista, idPista, ev){
+  ev.stopPropagation();
+  const l = listas.find(x => x.id === idLista);
+  if (!l) return;
+  l.pistas = l.pistas.filter(x => x !== idPista);
+  guardarListas();
+  pintarDetalleLista();
+  toast('Quitada de la lista');
+}
+function borrarListaActual(){
+  const l = listas.find(x => x.id === listaActualId);
+  if (!l) return;
+  if (!confirm('¿Borrar la lista "' + l.nombre + '"? Las pistas seguirán en tu biblioteca.')) return;
+  listas = listas.filter(x => x.id !== listaActualId);
+  guardarListas();
+  cerrarDetalleLista();
+  toast('Lista borrada');
+}
+
+/* Modal añadir a lista */
+function abrirModalLista(idPista, ev){
+  ev.stopPropagation();
+  pistaParaLista = idPista;
+  const cont = document.getElementById('opcionesListas');
+  cont.innerHTML = listas.length
+    ? listas.map(l => `
+      <button class="opcionLista" onclick="anadirAlista('${l.id}')">
+        🎼 ${escapar(l.nombre)} <small>${l.pistas.length}</small>
+      </button>`).join('')
+    : '<div class="vacio" style="padding:10px 0 16px">Aún no tienes listas — crea la primera abajo.</div>';
+  document.getElementById('nuevaListaNombre').value = '';
+  document.getElementById('modalLista').classList.add('abierto');
+}
+function cerrarModalLista(){
+  document.getElementById('modalLista').classList.remove('abierto');
+  pistaParaLista = null;
+}
+function anadirAlista(idLista){
+  const l = listas.find(x => x.id === idLista);
+  if (!l || !pistaParaLista) return;
+  if (l.pistas.includes(pistaParaLista)) {
+    toast('Ya estaba en "' + l.nombre + '"');
+  } else {
+    l.pistas.push(pistaParaLista);
+    guardarListas();
+    toast('Añadida a "' + l.nombre + '"');
+  }
+  cerrarModalLista();
+}
+function crearYAnadir(){
+  const nombre = document.getElementById('nuevaListaNombre').value.trim();
+  if (!nombre) { toast('Escribe un nombre para la lista'); return; }
+  const l = { id: 'lst_' + Date.now(), nombre, pistas: pistaParaLista ? [pistaParaLista] : [] };
+  listas.push(l);
+  guardarListas();
+  cerrarModalLista();
+  toast('Lista "' + nombre + '" creada');
 }
 
 /* ---------- Radios (Radio Browser API) ---------- */
@@ -679,7 +923,7 @@ function mostrarFavoritas(){
   radios = [...favs];
   const cont = document.getElementById('listaRadios');
   if (!radios.length) {
-    cont.innerHTML = '<div class="vacio"><strong>Sin favoritas todavía.</strong><br>Toca la estrella de una emisora para tenerla siempre a mano, incluso sin buscarla.</div>';
+    cont.innerHTML = '<div class="vacio"><strong>Sin favoritas todavía.</strong><br>Toca la estrella de una emisora para tenerla siempre a mano.</div>';
     return;
   }
   pintarRadios();
@@ -706,15 +950,18 @@ function pintarRadios(){
 function liberarURL(){
   if (urlObjeto) { URL.revokeObjectURL(urlObjeto); urlObjeto = null; }
 }
+function repintarMusica(){
+  pintarBiblioteca();
+  if (listaActualId) pintarDetalleLista();
+}
 
-function reproducirPistaId(id, autoplay = true){
-  const orden = ordenActual.length ? ordenActual : biblioteca;
-  const i = orden.findIndex(p => p.id === id);
-  if (i < 0) return;
+/* Reproduce desde un contexto (array de pistas) */
+function reproducirDesde(arr, i, autoplay = true){
+  const p = arr[i];
+  if (!p) return;
   modo = 'musica';
-  cola = orden.slice();       // la cola sigue el orden agrupado por artista
+  cola = arr.slice();
   indice = i;
-  const p = cola[i];
   liberarURL();
   if (p.tipo === 'local') {
     urlObjeto = URL.createObjectURL(p.blob);
@@ -725,7 +972,7 @@ function reproducirPistaId(id, autoplay = true){
   if (autoplay) audio.play().catch(() => toast('No se pudo reproducir esta pista'));
   actualizarUI(p.nombre, p.artista || (p.tipo === 'remota' ? 'Pista remota' : 'Archivo local'));
   guardarSesion({ modo: 'musica', id: p.id });
-  pintarBiblioteca();
+  repintarMusica();
 }
 function reproducirIndiceMusica(i, autoplay = true){
   const p = cola[i];
@@ -741,7 +988,50 @@ function reproducirIndiceMusica(i, autoplay = true){
   if (autoplay) audio.play().catch(() => toast('No se pudo reproducir esta pista'));
   actualizarUI(p.nombre, p.artista || (p.tipo === 'remota' ? 'Pista remota' : 'Archivo local'));
   guardarSesion({ modo: 'musica', id: p.id });
-  pintarBiblioteca();
+  repintarMusica();
+}
+
+/* Contextos concretos */
+function reproducirEnArtista(idPista){
+  const p = biblioteca.find(x => x.id === idPista);
+  if (!p) return;
+  const clave = (p.artista || '').trim() || SIN_ARTISTA;
+  const { grupos } = gruposPorArtista();
+  const pistas = grupos.get(clave) || [p];
+  reproducirDesde(pistas, pistas.findIndex(x => x.id === idPista));
+}
+function reproducirArtista(clave, ev){
+  ev.stopPropagation();
+  const { grupos } = gruposPorArtista();
+  const pistas = grupos.get(clave);
+  if (!pistas || !pistas.length) return;
+  abiertas[clave] = true;
+  localStorage.setItem('sintonia_abiertas', JSON.stringify(abiertas));
+  reproducirDesde(pistas, shuffle ? Math.floor(Math.random() * pistas.length) : 0);
+  toast('Sonando: ' + clave);
+}
+function reproducirLista(idLista, ev){
+  if (ev) ev.stopPropagation();
+  const l = listas.find(x => x.id === idLista);
+  if (!l) return;
+  const pistas = pistasDeLista(l);
+  if (!pistas.length) { toast('La lista está vacía'); return; }
+  reproducirDesde(pistas, shuffle ? Math.floor(Math.random() * pistas.length) : 0);
+  toast('Sonando: ' + l.nombre);
+}
+function reproducirListaActual(){ if (listaActualId) reproducirLista(listaActualId); }
+function reproducirDeLista(idLista, i){
+  const l = listas.find(x => x.id === idLista);
+  if (!l) return;
+  reproducirDesde(pistasDeLista(l), i);
+}
+function reproducirPistaId(id, autoplay = true){
+  // contexto: biblioteca completa ordenada por artista
+  const { grupos, claves } = gruposPorArtista();
+  const plano = [];
+  for (const c of claves) plano.push(...grupos.get(c));
+  const i = plano.findIndex(p => p.id === id);
+  if (i >= 0) reproducirDesde(plano, i, autoplay);
 }
 
 function reproducirRadio(i, autoplay = true){
@@ -759,7 +1049,6 @@ function reproducirRadio(i, autoplay = true){
     tags: e.tags || '', bitrate: e.bitrate || 0
   }});
   pintarRadios();
-  // Contador de clics de Radio Browser (buena práctica del directorio)
   if (autoplay) fetch('https://de1.api.radio-browser.info/json/url/' + e.stationuuid).catch(() => {});
 }
 
@@ -814,7 +1103,7 @@ function siguiente(manual = true){
     i = indice + 1;
     if (i >= cola.length) {
       if (repeat === 'all' || manual) i = 0;
-      else { audio.pause(); return; }   // fin de lista sin repetición
+      else { audio.pause(); return; }
     }
   }
   modo === 'radio' ? reproducirRadio(i) : reproducirIndiceMusica(i);
@@ -874,7 +1163,7 @@ function restaurarSesion(){
   try { s = JSON.parse(localStorage.getItem('sintonia_sesion')); } catch (_) {}
   if (!s) return;
   if (s.modo === 'musica' && s.id) {
-    if (biblioteca.some(p => p.id === s.id)) reproducirPistaId(s.id, false);  // cargada y en pausa
+    if (biblioteca.some(p => p.id === s.id)) reproducirPistaId(s.id, false);
   } else if (s.modo === 'radio' && s.emisora) {
     radios = [s.emisora];
     reproducirRadio(0, false);
