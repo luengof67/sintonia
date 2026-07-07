@@ -1115,13 +1115,49 @@ function anterior(){
   modo === 'radio' ? reproducirRadio(i) : reproducirIndiceMusica(i);
 }
 
+/* ----- Servicio en primer plano (solo APK con Capacitor) -----
+   Mantiene el audio vivo con la pantalla apagada mediante una
+   notificación persistente. En navegador, FS es null y no hace nada. */
+const FS = (window.Capacitor && window.Capacitor.Plugins) ? window.Capacitor.Plugins.ForegroundService : null;
+let servicioActivo = false;
+let permisoNotifPedido = false;
+async function servicioPrimerPlano(encender){
+  if (!FS) return;
+  try {
+    if (encender) {
+      if (!permisoNotifPedido) {
+        permisoNotifPedido = true;
+        try { await FS.requestPermissions(); } catch (_) {}
+      }
+      const opciones = {
+        id: 1,
+        title: document.getElementById('pTitulo').textContent || 'SINTONÍA',
+        body: modo === 'radio' ? 'Radio en directo' : 'Reproduciendo',
+        smallIcon: 'ic_stat_sintonia',
+        serviceType: 2   // mediaPlayback
+      };
+      if (servicioActivo) {
+        await FS.updateForegroundService(opciones);
+      } else {
+        await FS.startForegroundService(opciones);
+        servicioActivo = true;
+      }
+    } else if (servicioActivo) {
+      await FS.stopForegroundService();
+      servicioActivo = false;
+    }
+  } catch (_) {}
+}
+
 audio.addEventListener('play', () => {
   document.getElementById('player').classList.add('sonando');
   document.getElementById('iconPlay').innerHTML = '<path d="M6 5h4v14H6zm8 0h4v14h-4z"/>';
+  servicioPrimerPlano(true);
 });
 audio.addEventListener('pause', () => {
   document.getElementById('player').classList.remove('sonando');
   document.getElementById('iconPlay').innerHTML = '<path d="M8 5v14l11-7z"/>';
+  servicioPrimerPlano(false);
 });
 audio.addEventListener('ended', () => {
   if (modo !== 'musica') return;
